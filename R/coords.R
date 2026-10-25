@@ -815,6 +815,10 @@ euc.dist <- function(x1, x2) sqrt(sum((x1 - x2) ^ 2))
 ## Vectorised.  The previous per-row loop re-subset the whole `df` inside
 ## every iteration and called `euc.dist()` once per node, which is quadratic
 ## (~5.5 s on a 4000-tip tree).  The arithmetic below is identical.
+##' Euclidean distances from a node
+##'
+##' @keywords internal
+##' @export
 getNodeEuclDistances <- function(df, node){
   # https://stackoverflow.com/questions/24746892/how-to-calculate-euclidian-distance-between-two-points-defined-by-matrix-contain#24747155
   i <- match(node, df$node)
@@ -942,6 +946,8 @@ getSubtreeUnrooted.df <- function(df, node){
 }
 
 
+##' @keywords internal
+##' @export
 .getRoot.df <- function(df, node){
 
   root <- which(is.na(df$parent))
@@ -1018,12 +1024,23 @@ get.trunk <- function(tr) {
     i <- which.max(path_length)
     return(get.path(tr, root, i))
 }
+##' Node ids in post-order
+##'
+##' @param tree a `phylo` object.
+##' @return an integer vector of node ids.
+##'
 ##' @importFrom ape reorder.phylo
+##' @keywords internal
+##' @export
 getNodes_by_postorder <- function(tree) {
   tree <- reorder.phylo(tree, "postorder")
     unique(rev(as.vector(t(tree$edge[,c(2,1)]))))
 }
 
+##' x coordinates from an edge list
+##'
+##' @keywords internal
+##' @export
 getXcoord2 <- function(x, root, parent, child, len, start=0, rev=FALSE) {
     x[root] <- start
     x[-root] <- NA  ## only root is set to start, by default 0
@@ -1368,6 +1385,10 @@ getYcoord_tidy <- function(tr, x, step = 1, extra.tip.padding = 0.01) {
 }
 
 ## @importFrom magrittr %>%
+##' y coordinates for tips
+##'
+##' @keywords internal
+##' @export
 getYcoord <- function(tr, step=1, tip.order = NULL) {
     Ntip <- length(tr[["tip.label"]])
     N <- getNodeNum(tr)
@@ -1537,6 +1558,10 @@ getYcoord_scale2 <- function(tr, df, yscale) {
 
 
 
+##' y coordinates scaled by a number
+##'
+##' @keywords internal
+##' @export
 getYcoord_scale_numeric <- function(tr, df, yscale, ...) {
     df <- .assign_parent_status(tr, df, yscale)
     df <- .assign_child_status(tr, df, yscale)
@@ -1601,6 +1626,10 @@ getYcoord_scale_numeric <- function(tr, df, yscale, ...) {
 }
 
 
+##' y coordinates scaled by a category
+##'
+##' @keywords internal
+##' @export
 getYcoord_scale_category <- function(tr, df, yscale, yscale_mapping=NULL, ...) {
     if (is.null(yscale_mapping)) {
         stop("yscale is category variable, user should provide yscale_mapping,
@@ -1651,6 +1680,10 @@ add_angle_slanted <- function(res) {
 }
 
 
+##' Branch mid-point coordinates
+##'
+##' @keywords internal
+##' @export
 calculate_branch_mid <- function(res, layout) {
     if (layout %in% c("equal_angle", "daylight", "ape", "tree_and_leaf")){
         res$branch.y <- with(res, (y[match(parent, node)] + y)/2)
@@ -1668,6 +1701,10 @@ calculate_branch_mid <- function(res, layout) {
 }
 
 
+##' Re-assign y coordinates
+##'
+##' @keywords internal
+##' @export
 re_assign_ycoord_df <- function(df, currentNode) {
     while(anyNA(df$y)) {
         pNode <- unique(with(df, parent[match(currentNode, node)]))

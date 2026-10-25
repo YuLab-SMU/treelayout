@@ -2,7 +2,8 @@
 #'
 #' @param data A data frame containing tree node coordinates
 #' @return A data frame with added 'angle' column
-#' @noRd
+#' @keywords internal
+#' @export
 calculate_angle <- function(data) {
     if (!"y" %in% names(data)) {
         stop("Input data must contain 'y' column")

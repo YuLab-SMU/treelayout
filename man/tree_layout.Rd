@@ -44,6 +44,10 @@ cladogram.}
 
 \item{root.position}{x position of the root.}
 
+\item{hang}{fraction of the tree height by which labels hang below the rest
+of the tree, for \code{dendrogram} layout of \code{hclust}-like input. A negative
+value makes them hang down from 0.}
+
 \item{...}{passed on to the layout function.}
 }
 \value{

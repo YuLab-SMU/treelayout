@@ -41,6 +41,9 @@
 #' @param as.Date logical, whether `mrsd` should be treated as a Date.
 #' @param yscale variable used to scale tips along y; `"none"` for standard.
 #' @param root.position x position of the root.
+#' @param hang fraction of the tree height by which labels hang below the rest
+#'   of the tree, for `dendrogram` layout of `hclust`-like input. A negative
+#'   value makes them hang down from 0.
 #' @param ... passed on to the layout function.
 #'
 #' @return A `tbl_df` with one row per node and columns `node`, `parent`,
@@ -114,7 +117,7 @@ tree_layout <- function(model, data = NULL,
     }
 
     if (!is.null(external)) {
-        res <- .layout_external(model, x, external, root.position, ...)
+        res <- .layout_external(model, x, external, root.position, node_table, ...)
     } else if (layout %in% .layout_names$unrooted) {
         res <- layout.unrooted(model, layout.method = layout,
                                branch.length = branch.length, ...)
@@ -175,10 +178,11 @@ tree_layout <- function(model, data = NULL,
 #' @param x the `phylo` version, already ladderized.
 #' @param fn the layout function.
 #' @param root.position x offset applied to the result.
+#' @param node_table the node table to join the coordinates onto.
 #' @param ... passed to `fn`.
 #' @return a `tbl_df` with `node`, `x`, `y`.
 #' @noRd
-.layout_external <- function(model, x, fn, root.position, ...) {
+.layout_external <- function(model, x, fn, root.position, node_table, ...) {
     if (!requireNamespace("igraph", quietly = TRUE)) {
         stop("Layout functions need the 'igraph' package.\n",
              "-> install it with install.packages(\"igraph\")", call. = FALSE)
