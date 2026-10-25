@@ -215,6 +215,8 @@ layoutDaylight <- function(model, branch.length, MAX_COUNT=5 ){
         return(tree_df)
     }
 
+    ## Run up to MAX_COUNT rounds, stopping when the average angle change
+    ## drops below MINIMUM_AVERAGE_ANGLE_CHANGE.
     ave_change <- 1.0
     for (i in seq_len(MAX_COUNT)) {
         total_max <- 0.0
