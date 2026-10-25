@@ -1,0 +1,35 @@
+Package: treelayout
+Title: Tree Layout Algorithms
+Version: 0.0.0.9000
+Authors@R: c(
+    person("Guangchuang", "Yu", email = "guangchuangyu@gmail.com",
+           role = c("aut", "cre", "cph"),
+           comment = c(ORCID = "0000-0002-6485-8781"))
+    )
+Description: Computes node coordinates for phylogenetic trees and other
+    tree-like structures. Given a tree, returns one row per node with x and
+    y coordinates, ready for plotting by any graphics system. This is the
+    layout engine used by the 'ggtree' package, extracted so that the
+    coordinate computation can be used without a plotting dependency.
+License: Artistic-2.0
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Depends:
+    R (>= 4.2.0)
+Imports:
+    ape,
+    methods,
+    dplyr,
+    purrr,
+    rlang,
+    stats,
+    tibble,
+    tidytree (>= 0.4.5)
+Suggests:
+    igraph,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+ByteCompile: true
+URL: https://github.com/YuLab-SMU/treelayout
+BugReports: https://github.com/YuLab-SMU/treelayout/issues
+Config/roxygen2/version: 8.1.1
