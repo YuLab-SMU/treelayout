@@ -4,6 +4,7 @@ export(Date2decimal)
 export(decimal2Date)
 export(get.path)
 export(get_layout)
+export(layout_names)
 export(tree_layout)
 importFrom(ape,
   ladderize,

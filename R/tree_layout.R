@@ -16,17 +16,6 @@
     ## full at a dozen places in ggtree
     unrooted = c("equal_angle", "daylight", "ape", "tree_and_leaf"),
 
-    ## circular-ish layouts where tip labels follow an angle
-    circular_group = c("circular", "radial", "daylight", "fan", "unrooted",
-                       "ape", "inward_circular", "equal_angle", "tree_and_leaf"),
-
-    ## substs used for tip label placement
-    tiplab_group = c("circular", "fan", "unrooted", "equal_angle", "daylight",
-                     "ape", "tree_and_leaf", "inward_circular"),
-
-    ## layouts where the tip edge length needs adjusting for hclust objects
-    tipedge_group = c("rectangular", "dendrogram", "roundrect"),
-
     ## layout name used by tanglegram, not reachable via `ggtree(layout=)`
     internal = c("tanglegram")
 )
@@ -94,7 +83,7 @@ tree_layout <- function(model, data = NULL,
         external <- layout
         layout <- "equal_angle"
     } else {
-        layout <- match.arg(layout, .layout_names$all)
+        layout <- match.arg(layout, layout_names())
     }
 
     x <- as.phylo(model)
@@ -217,6 +206,17 @@ tree_layout <- function(model, data = NULL,
     ## rbind() kept the layout attribute of the first tree only
     attr(df, "layout") <- if (is.function(layout)) "external" else layout
     df
+}
+
+
+#' Layout names accepted by [tree_layout()]
+#'
+#' @return a character vector of layout names.
+#' @examples
+#' layout_names()
+#' @export
+layout_names <- function() {
+    .layout_names$all
 }
 
 

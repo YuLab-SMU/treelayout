@@ -72,6 +72,8 @@ adjust_hclust_tip_edge_len <- function(
     if (
         !is.null(tip.edge.len) &&
             branch.length != 'none' &&
+            ## layouts where the tip edge length is meaningful, i.e. the
+            ## ones that hang the tips below the rest of the tree
             layout %in% c('rectangular', 'dendrogram', 'roundrect')
     ) {
         mx <- max(df$x, na.rm = TRUE)
