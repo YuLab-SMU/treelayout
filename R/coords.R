@@ -734,15 +734,43 @@ applyLayoutDaylight <- function(df, node_id, cache = NULL){
   arc
 }
 
+##'
+##' One call instead of three. Returns the left and right boundary angles of
+##' the clade subtree, the largest distance from `node` to any node inside
+##' the clade, and the largest distance from the root of the whole tree to
+##' any node -- the two radii the clade label / hilight code needs.
+##'
+##' @param data a node table with columns `node`, `parent`, `x`, `y`.
+##' @param node the root node id of the clade.
+##' @return a list with `left`, `right`, `radius` and `root_radius`.
+##'
+##' @examples
+##' tr <- ape::rtree(10)
+##' d <- tree_layout(tr, layout = "circular")
+##' clade_geometry(d, node = 12)
+##' @export
+clade_geometry <- function(data, node) {
+    subtree <- list(subtree = getSubtree.df(data, node), node = node)
+    arc <- getTreeArcAngles(data, node, subtree)
+    in_clade <- data$node %in% subtree$subtree
+    list(
+        left        = as.numeric(arc["left"]),
+        right       = as.numeric(arc["right"]),
+        radius      = max(getNodeEuclDistances(data[in_clade, ], node)),
+        root_radius = max(getNodeEuclDistances(data, .getRoot.df(data)))
+    )
+}
+
 ##' Find the right (clockwise rotation, angle from +ve x-axis to furthest subtree nodes) and
 ##' left (anti-clockwise angle from +ve x-axis to subtree) Returning arc angle in `[0, 2]` (0 to 360) domain.
 ##'
 ##' @title getTreeArcAngles
-##' @export
 ##' @param df tree data.frame
 ##' @param origin_id node id from which to calculate left and right hand angles of subtree.
 ##' @param subtree named list of root id of subtree (node) and list of node ids for given subtree (subtree).
 ##' @return named list with right and left angles in range `[0,2]` i.e 1 = 180 degrees, 1.5 = 270 degrees.
+##' @noRd
+
 getTreeArcAngles <- function(df, origin_id, subtree) {
   .daylightGetArcAngles(df, origin_id, subtree, .daylightBuildCache(df))
 }
@@ -818,7 +846,7 @@ euc.dist <- function(x1, x2) sqrt(sum((x1 - x2) ^ 2))
 ##' Euclidean distances from a node
 ##'
 ##' @keywords internal
-##' @export
+##' @noRd
 getNodeEuclDistances <- function(df, node){
   # https://stackoverflow.com/questions/24746892/how-to-calculate-euclidian-distance-between-two-points-defined-by-matrix-contain#24747155
   i <- match(node, df$node)
@@ -832,10 +860,10 @@ getNodeEuclDistances <- function(df, node){
 ##' Get all children of node from tree, including start_node.
 ##'
 ##' @title getSubtree
-##' @export
 ##' @param tree ape phylo tree object
 ##' @param node is the tree node id from which the tree is derived.
 ##' @return list of all child node id's from starting node.
+##' @noRd
 getSubtree <- function(tree, node){
 
   ## subtree <- c(node)
@@ -853,10 +881,10 @@ getSubtree <- function(tree, node){
 ##' Get all children of node from df tree using breath-first.
 ##'
 ##' @title getSubtree.df
-##' @export
 ##' @param df tree data.frame
 ##' @param node id of starting node.
 ##' @return list of all child node id's from starting node.
+##' @noRd
 getSubtree.df <- function(df, node){
   ## subtree <- node[node != 0]
   ## i <- 1
@@ -947,7 +975,7 @@ getSubtreeUnrooted.df <- function(df, node){
 
 
 ##' @keywords internal
-##' @export
+##' @noRd
 .getRoot.df <- function(df, node){
 
   root <- which(is.na(df$parent))
@@ -1015,15 +1043,6 @@ getNodeName <- function(tr) {
     nodeName <- c(tr$tip.label, nl)
     return(nodeName)
 }
-
-
-
-get.trunk <- function(tr) {
-    root <- getRoot(tr)
-    path_length <- sapply(1:(root-1), function(x) get.path_length(tr, root, x))
-    i <- which.max(path_length)
-    return(get.path(tr, root, i))
-}
 ##' Node ids in post-order
 ##'
 ##' @param tree a `phylo` object.
@@ -1031,7 +1050,7 @@ get.trunk <- function(tr) {
 ##'
 ##' @importFrom ape reorder.phylo
 ##' @keywords internal
-##' @export
+##' @noRd
 getNodes_by_postorder <- function(tree) {
   tree <- reorder.phylo(tree, "postorder")
     unique(rev(as.vector(t(tree$edge[,c(2,1)]))))
@@ -1443,125 +1462,11 @@ getYcoord <- function(tr, step=1, tip.order = NULL) {
 }
 
 
-getYcoord_scale <- function(tr, df, yscale) {
-
-    N <- getNodeNum(tr)
-    y <- numeric(N)
-
-    root <- getRoot(tr)
-    y[root] <- 0
-    y[-root] <- NA
-
-    edge <- tr$edge
-    parent <- edge[,1]
-    child <- edge[,2]
-
-    currentNodes <- root
-    while(anyNA(y)) {
-        newNodes <- c()
-        for (currentNode in currentNodes) {
-            idx <- which(parent %in% currentNode)
-            newNode <- child[idx]
-            direction <- -1
-            for (i in seq_along(newNode)) {
-                y[newNode[i]] <- y[currentNode] + df[newNode[i], yscale] * direction
-                direction <- -1 * direction
-            }
-            newNodes <- c(newNodes, newNode)
-        }
-        currentNodes <- unique(newNodes)
-    }
-    if (min(y) < 0) {
-        y <- y + abs(min(y))
-    }
-    return(y)
-}
-
-
-getYcoord_scale2 <- function(tr, df, yscale) {
-    root <- getRoot(tr)
-
-    pathLength <- sapply(1:length(tr$tip.label), function(i) {
-        get.path_length(tr, i, root, yscale)
-    })
-
-    ordered_tip <- order(pathLength, decreasing = TRUE)
-    ii <- 1
-    ntip <- length(ordered_tip)
-    while(ii < ntip) {
-        sib <- sibling(tr, ordered_tip[ii])
-        if (length(sib) == 0) {
-            ii <- ii + 1
-            next
-        }
-        jj <- which(ordered_tip %in% sib)
-        if (length(jj) == 0) {
-            ii <- ii + 1
-            next
-        }
-        sib <- ordered_tip[jj]
-        ordered_tip <- ordered_tip[-jj]
-        nn <- length(sib)
-        if (ii < length(ordered_tip)) {
-            ordered_tip <- c(ordered_tip[1:ii],sib, ordered_tip[(ii+1):length(ordered_tip)])
-        } else {
-            ordered_tip <- c(ordered_tip[1:ii],sib)
-        }
-
-        ii <- ii + nn + 1
-    }
-
-
-    long_branch <- rev(ancestor(tr, ordered_tip[1]))
-    long_branch <- c(long_branch, ordered_tip[1])
-
-    N <- getNodeNum(tr)
-    y <- numeric(N)
-
-    y[root] <- 0
-    y[-root] <- NA
-
-    ## yy <- df[, yscale]
-    ## yy[is.na(yy)] <- 0
-
-    for (i in 2:length(long_branch)) {
-        y[long_branch[i]] <- y[long_branch[i-1]] + df[long_branch[i], yscale]
-    }
-
-    parent <- df[, "parent"]
-    child <- df[, "node"]
-
-    currentNodes <- root
-    while(anyNA(y)) {
-        newNodes <- c()
-        for (currentNode in currentNodes) {
-            idx <- which(parent %in% currentNode)
-            newNode <- child[idx]
-            newNode <- c(newNode[! newNode %in% ordered_tip],
-                         rev(ordered_tip[ordered_tip %in% newNode]))
-            direction <- -1
-            for (i in seq_along(newNode)) {
-                if (is.na(y[newNode[i]])) {
-                    y[newNode[i]] <- y[currentNode] + df[newNode[i], yscale] * direction
-                    direction <- -1 * direction
-                }
-            }
-            newNodes <- c(newNodes, newNode)
-        }
-        currentNodes <- unique(newNodes)
-    }
-    if (min(y) < 0) {
-        y <- y + abs(min(y))
-    }
-    return(y)
-}
-
-
 
 ##' y coordinates scaled by a number
 ##'
 ##' @keywords internal
-##' @export
+##' @noRd
 getYcoord_scale_numeric <- function(tr, df, yscale, ...) {
     df <- .assign_parent_status(tr, df, yscale)
     df <- .assign_child_status(tr, df, yscale)
@@ -1629,7 +1534,7 @@ getYcoord_scale_numeric <- function(tr, df, yscale, ...) {
 ##' y coordinates scaled by a category
 ##'
 ##' @keywords internal
-##' @export
+##' @noRd
 getYcoord_scale_category <- function(tr, df, yscale, yscale_mapping=NULL, ...) {
     if (is.null(yscale_mapping)) {
         stop("yscale is category variable, user should provide yscale_mapping,
@@ -1892,57 +1797,4 @@ edge2vec <- function(tr) {
   }
   tr$edge.length <- tr$edge.length * 2
   return(tr)
-}
-
-
-##' path from start node to end node
-##'
-##'
-##' @title get.path
-##' @param phylo phylo object
-##' @param from start node
-##' @param to end node
-##' @return node vectot
-##' @importFrom tidytree ancestor
-##' @export
-##' @author Guangchuang Yu
-get.path <- function(phylo, from, to) {
-    anc_from <- ancestor(phylo, from)
-    anc_from <- c(from, anc_from)
-    anc_to <- ancestor(phylo, to)
-    anc_to <- c(to, anc_to)
-    mrca <- intersect(anc_from, anc_to)[1]
-
-    i <- which(anc_from == mrca)
-    j <- which(anc_to == mrca)
-
-    path <- c(anc_from[1:i], rev(anc_to[1:(j-1)]))
-    return(path)
-}
-
-
-get.path_length <- function(phylo, from, to, weight=NULL) {
-    path <- get.path(phylo, from, to)
-    if (is.null(weight)) {
-        return(length(path)-1)
-    }
-
-    df <- tree_layout(phylo)
-    if ( ! (weight %in% colnames(df))) {
-        stop("weight should be one of numerical attributes of the tree...")
-    }
-
-    res <- 0
-
-    get_edge_index <- function(df, from, to) {
-        which((df[,1] == from | df[,2] == from) &
-                  (df[,1] == to | df[,2] == to))
-    }
-
-    for(i in 1:(length(path)-1)) {
-        ee <- get_edge_index(df, path[i], path[i+1])
-        res <- res + df[ee, weight]
-    }
-
-    return(res)
 }
