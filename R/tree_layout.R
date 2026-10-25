@@ -110,16 +110,27 @@ tree_layout <- function(model, data = NULL,
         x <- ladderize(x, right = right)
     }
 
+    ## `na_free_model` is the tree the unrooted layouts get: the same one
+    ## they always got, minus the NA branch lengths that would make them
+    ## emit the warning a second time.
+    na_free_model <- model
     if (!is.null(x$edge.length) && anyNA(x$edge.length)) {
         warning("'edge.length' contains NA values...\n",
-                "## setting 'edge.length' to NULL automatically when plotting the tree...")
+                "## setting 'edge.length' to NULL automatically")
         x$edge.length <- NULL
+        if (inherits(na_free_model, "phylo")) {
+            na_free_model$edge.length <- NULL
+        }
     }
 
     if (!is.null(external)) {
         res <- .layout_external(model, x, external, root.position, node_table, ...)
     } else if (layout %in% .layout_names$unrooted) {
-        res <- layout.unrooted(model, layout.method = layout,
+        ## The unrooted layouts re-derive the tree from scratch, so they get
+        ## the original `model` -- passing the ladderized `x` would change
+        ## the geometry. Only the NA branch lengths are dropped first, to
+        ## stop the layouts warning about the same thing again.
+        res <- layout.unrooted(na_free_model, layout.method = layout,
                                branch.length = branch.length, ...)
     } else {
         if (layout != "tidy")

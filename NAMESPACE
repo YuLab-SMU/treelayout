@@ -39,3 +39,4 @@ importFrom(tidytree,
   rootnode,
   sibling
 )
+importFrom(utils,getFromNamespace)

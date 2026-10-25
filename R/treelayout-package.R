@@ -11,5 +11,6 @@
 #' @importFrom tidytree child parent ancestor rootnode isTip offspring sibling
 #' @importFrom tidytree as_tibble as.phylo Nnode Ntip getNodeNum
 #' @importFrom rlang .data
+#' @importFrom utils getFromNamespace
 #' @importFrom methods is
 NULL
