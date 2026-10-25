@@ -68,6 +68,7 @@ tree_layout <- function(model, data = NULL,
                         as.Date       = FALSE,
                         yscale        = "none",
                         root.position = 0,
+                        hang          = .1,
                         ...) {
 
     ## a list of trees: lay out each and stack the results
@@ -86,7 +87,22 @@ tree_layout <- function(model, data = NULL,
         layout <- match.arg(layout, layout_names())
     }
 
-    x <- as.phylo(model)
+    ## dendrogram-like objects (dendrogram, agnes, diana, twins, linkage, hclust)
+    ## have no as.phylo() method; convert them the way the layout code does
+    hclust_like <- inherits(model, c("dendrogram", "linkage", "agnes", "diana", "twins"))
+    if (hclust_like) {
+        model <- stats::as.hclust(model)
+    }
+    ## `x` is the phylo used for geometry; `model` keeps any annotations, so
+    ## as_tibble() is called on `model` unless it is an hclust, which has no
+    ## tidytree method and whose node table comes from `x`
+    if (inherits(model, "hclust")) {
+        x <- .as.phylo.hclust2(model, hang = hang)
+        node_table <- as_tibble(x)
+    } else {
+        x <- as.phylo(model)
+        node_table <- as_tibble(model)
+    }
     if (ladderize == TRUE) {
         x <- ladderize(x, right = right)
     }
@@ -123,7 +139,9 @@ tree_layout <- function(model, data = NULL,
 
         xypos <- tibble(node = 1:N, x = xpos + root.position, y = ypos)
 
-        df <- as_tibble(model) |>
+        ## `model`, not `x`: as_tibble() on a treedata carries its annotation
+        ## columns through, and the ladderized phylo would drop them
+        df <- node_table |>
             mutate(isTip = !.data$node %in% .data$parent)
 
         res <- full_join(df, xypos, by = "node")
@@ -172,7 +190,7 @@ tree_layout <- function(model, data = NULL,
         stop("Layout function returned ", nrow(xy), " coordinates for a tree with ",
              Nnode(x, internal.only = FALSE), " nodes.", call. = FALSE)
     }
-    df <- as_tibble(model) |>
+    df <- node_table |>
         mutate(isTip = !.data$node %in% .data$parent)
     xypos <- tibble(node = seq_len(nrow(xy)),
                     x = xy[, 1] + root.position,

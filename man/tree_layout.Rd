@@ -15,6 +15,7 @@ tree_layout(
   as.Date = FALSE,
   yscale = "none",
   root.position = 0,
+  hang = 0.1,
   ...
 )
 }

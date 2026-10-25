@@ -738,6 +738,7 @@ applyLayoutDaylight <- function(df, node_id, cache = NULL){
 ##' left (anti-clockwise angle from +ve x-axis to subtree) Returning arc angle in `[0, 2]` (0 to 360) domain.
 ##'
 ##' @title getTreeArcAngles
+##' @export
 ##' @param df tree data.frame
 ##' @param origin_id node id from which to calculate left and right hand angles of subtree.
 ##' @param subtree named list of root id of subtree (node) and list of node ids for given subtree (subtree).
@@ -827,6 +828,7 @@ getNodeEuclDistances <- function(df, node){
 ##' Get all children of node from tree, including start_node.
 ##'
 ##' @title getSubtree
+##' @export
 ##' @param tree ape phylo tree object
 ##' @param node is the tree node id from which the tree is derived.
 ##' @return list of all child node id's from starting node.
@@ -847,6 +849,7 @@ getSubtree <- function(tree, node){
 ##' Get all children of node from df tree using breath-first.
 ##'
 ##' @title getSubtree.df
+##' @export
 ##' @param df tree data.frame
 ##' @param node id of starting node.
 ##' @return list of all child node id's from starting node.
