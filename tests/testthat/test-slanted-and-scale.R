@@ -7,17 +7,17 @@ test_that("slanted coordinates match the indicator-matrix definition", {
         set.seed(n)
         tr <- ape::rtree(n)
         ## the definition this replaces
-        sbp <- .convert_tips2ancestors_sbp(tr, include.root = TRUE)
-        expect_equal(.slanted_coords(tr)$x, getXcoord_no_length_slanted(sbp))
-        expect_equal(.slanted_coords(tr)$y, getYcoord_no_length_slanted(sbp))
+        sbp <- .convert_tips2ancestors_sbp_ref(tr, include.root = TRUE)
+        expect_equal(.slanted_coords(tr)$x, getXcoord_no_length_slanted_ref(sbp))
+        expect_equal(.slanted_coords(tr)$y, getYcoord_no_length_slanted_ref(sbp))
     }
 })
 
 test_that("slanted coordinates match on ladder and star shapes", {
     for (tr in list(ape::stree(12, type = "left"), ape::stree(9, type = "star"))) {
-        sbp <- .convert_tips2ancestors_sbp(tr, include.root = TRUE)
-        expect_equal(.slanted_coords(tr)$x, getXcoord_no_length_slanted(sbp))
-        expect_equal(.slanted_coords(tr)$y, getYcoord_no_length_slanted(sbp))
+        sbp <- .convert_tips2ancestors_sbp_ref(tr, include.root = TRUE)
+        expect_equal(.slanted_coords(tr)$x, getXcoord_no_length_slanted_ref(sbp))
+        expect_equal(.slanted_coords(tr)$y, getYcoord_no_length_slanted_ref(sbp))
     }
 })
 
@@ -58,4 +58,32 @@ test_that("children and parent indexes agree with tidytree", {
         p <- tidytree::parent(as_tibble(tr), v)$node
         expect_equal(pars[v], if (length(p) == 0L) 0L else p)
     }
+})
+
+test_that("re_assign_ycoord_df fills a blanked internal node", {
+    tr <- ape::rtree(10)
+    d <- tree_layout(tr, layout = "rectangular")
+    int <- which(!d$isTip)[1]
+    expected <- d$y[int]
+    d$y[int] <- NA
+
+    out <- re_assign_ycoord_df(d, currentNode = d$node[d$isTip])
+    expect_false(anyNA(out$y))
+    expect_equal(out$y[int], expected, tolerance = 1e-12)
+})
+
+test_that("re_assign_ycoord_df handles a deep ladder tree", {
+    ## the level-by-level version took 21 s here at 1200 tips
+    tr <- ape::stree(400, type = "left")
+    d <- tree_layout(tr, layout = "rectangular")
+    d$y[d$node > ape::Ntip(tr)] <- NA
+
+    out <- re_assign_ycoord_df(d, currentNode = d$node[d$isTip])
+    expect_false(anyNA(out$y))
+    expect_equal(sort(out$y[out$isTip]), seq_len(ape::Ntip(tr)))
+})
+
+test_that("re_assign_ycoord_df leaves a complete table untouched", {
+    d <- tree_layout(ape::rtree(8), layout = "rectangular")
+    expect_identical(re_assign_ycoord_df(d, currentNode = d$node[d$isTip])$y, d$y)
 })
