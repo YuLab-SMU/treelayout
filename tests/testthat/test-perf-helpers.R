@@ -59,8 +59,8 @@ test_that('layoutEqualAngle still reproduces the documented geometry', {
     expect_equal(nrow(layout), max(tree$edge))
     expect_true(all(is.finite(layout$x)))
     expect_true(all(is.finite(layout$y)))
-    expect_equal(layout$x[treeio::rootnode(tree)], 0)
-    expect_equal(layout$y[treeio::rootnode(tree)], 0)
+    expect_equal(layout$x[tidytree::rootnode(tree)], 0)
+    expect_equal(layout$y[tidytree::rootnode(tree)], 0)
 })
 
 ## `getNodeEuclDistances()` used to re-subset the whole data frame once per
