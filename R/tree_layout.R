@@ -196,7 +196,7 @@ tree_layout <- function(model, data = NULL,
 #' @param root.position x offset applied to the result.
 #' @param node_table the node table to join the coordinates onto.
 #' @param ... passed to `fn`.
-#' @return a `tbl_df` with `node`, `x`, `y`.
+#' @return the node table with `x` and `y` joined on `node`.
 #' @noRd
 .layout_external <- function(model, x, fn, root.position, node_table, ...) {
     if (!requireNamespace("igraph", quietly = TRUE)) {
@@ -205,7 +205,16 @@ tree_layout <- function(model, data = NULL,
     }
     g <- ape::as.igraph.phylo(x, use.labels = FALSE)
     xy <- fn(g, ...)
-    xy <- as.matrix(xy)[, 1:2, drop = FALSE]
+    xy <- as.matrix(xy)
+    ## check the shape before subsetting: a layout function returning the wrong
+    ## thing used to fail inside `[, 1:2]` with "subscript out of bounds",
+    ## which says nothing about what the caller did wrong.
+    if (!is.numeric(xy) || ncol(xy) < 2L) {
+        stop("A layout function must return a numeric matrix with at least two ",
+             "columns (x, y); got ", nrow(xy), " x ", ncol(xy), " of mode ",
+             mode(xy), ".", call. = FALSE)
+    }
+    xy <- xy[, 1:2, drop = FALSE]
     if (nrow(xy) != (Nnode(x, internal.only = FALSE))) {
         stop("Layout function returned ", nrow(xy), " coordinates for a tree with ",
              Nnode(x, internal.only = FALSE), " nodes.", call. = FALSE)
