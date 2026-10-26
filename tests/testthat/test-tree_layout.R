@@ -110,3 +110,23 @@ test_that("multiPhylo result has a clean class vector", {
     res <- tree_layout(ape::rmtree(3, 4))
     expect_identical(class(res), c("tbl_tree", "tbl_df", "tbl", "data.frame"))
 })
+
+test_that("the result carries tbl_tree exactly once", {
+    ## the layout helpers already mark their result, and tree_layout added the
+    ## class again on top, so every layout returned
+    ## c("tbl_tree", "tbl_tree", "tbl_df", ...). Anything comparing class()
+    ## exactly, or indexing class(x)[2], saw the wrong thing.
+    tr <- ape::rtree(8)
+    for (ly in layout_names()) {
+        d <- suppressWarnings(tree_layout(tr, layout = ly))
+        expect_equal(sum(class(d) == "tbl_tree"), 1L, info = ly)
+        expect_identical(class(d), c("tbl_tree", "tbl_df", "tbl", "data.frame"),
+                         info = ly)
+        expect_true(inherits(d, "tbl_tree"), info = ly)
+    }
+})
+
+test_that("multiPhylo and hclust results also carry tbl_tree once", {
+    expect_equal(sum(class(tree_layout(ape::rmtree(2, 5))) == "tbl_tree"), 1L)
+    expect_equal(sum(class(tree_layout(hclust(dist(matrix(rnorm(20), 5))))) == "tbl_tree"), 1L)
+})

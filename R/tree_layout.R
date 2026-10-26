@@ -174,7 +174,12 @@ tree_layout <- function(model, data = NULL,
     }
     res <- scaleY(as.phylo(model), res, yscale, layout, ...)
     res <- adjust_hclust_tip_edge_len(res, x, layout, branch.length)
-    class(res) <- c("tbl_tree", class(res))
+    ## The layout helpers already mark their result as a tbl_tree, so adding the
+    ## class unconditionally stacks it twice ("tbl_tree" "tbl_tree" "tbl_df" ...),
+    ## which breaks any exact class() comparison. Only add it when missing.
+    if (!inherits(res, "tbl_tree")) {
+        class(res) <- c("tbl_tree", class(res))
+    }
     attr(res, "layout") <- if (is.null(external)) layout else "external"
     return(res)
 }
