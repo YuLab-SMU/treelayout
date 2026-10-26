@@ -13,6 +13,14 @@
 #include <cmath>
 #include <vector>
 
+// Rcpp's Matrix/Vector operator() takes a signed index type; indexing with int
+// is the idiomatic form across every Rcpp package. -Wsign-conversion flags the
+// implicit int -> size_t inside the STL containers anyway, and silencing it
+// here reads better than casting at 40 call sites. --as-cran does not enable
+// -Wsign-conversion, so this only affects developers compiling with -Wextra.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+
 using namespace Rcpp;
 
 // M_PI is not guaranteed by MSVC; <cmath> may not define it without
@@ -46,16 +54,16 @@ NumericMatrix tree_and_leaf_relax_cpp(NumericMatrix positions,
     double current_step = step;
 
     // tip weights are constant across iterations
-    const int n_tips = tip_rows.size();
-    std::vector<double> tip_w(n_tips);
+    const int n_tips = static_cast<int>(tip_rows.size());
+    std::vector<double> tip_w(static_cast<std::size_t>(n_tips));
     for (int i = 0; i < n_tips; ++i)
-        tip_w[i] = 0.5 + depth_norm[tip_rows[i] - 1];
+        tip_w[static_cast<std::size_t>(i)] = 0.5 + depth_norm[tip_rows[i] - 1];
 
     // anchor weights are constant across iterations
-    std::vector<double> anchor_w(n_nodes, anchor_force);
-    for (int i = 0; i < internal_rows.size(); ++i)
-        anchor_w[internal_rows[i] - 1] = internal_anchor;
-    anchor_w[root_row - 1] = 0.0;
+    std::vector<double> anchor_w(static_cast<std::size_t>(n_nodes), anchor_force);
+    for (R_xlen_t i = 0; i < internal_rows.size(); ++i)
+        anchor_w[static_cast<std::size_t>(internal_rows[i] - 1)] = internal_anchor;
+    anchor_w[static_cast<std::size_t>(root_row - 1)] = 0.0;
 
     const double golden = 0.618033988749895;
 
@@ -159,3 +167,5 @@ NumericMatrix tree_and_leaf_relax_cpp(NumericMatrix positions,
 
     return positions;
 }
+
+#pragma GCC diagnostic pop
