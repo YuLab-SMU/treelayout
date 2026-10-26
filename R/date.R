@@ -27,10 +27,10 @@ scaleX_by_time_from_mrsd <- function(df, mrsd, as.Date) {
 
 ##' convert Date to decimal format, eg "2014-05-05" to "2014.34"
 ##'
-##'
-##' @title Date2decimal
-##' @param x Date
-##' @return numeric
+##' @param x a Date, or a numeric that is passed through unchanged.
+##' @return numeric year with fraction, e.g. 2014.34.
+##' @examples
+##' Date2decimal(as.Date("2014-05-05"))
 ##' @export
 ##' @author Guangchuang Yu
 Date2decimal <- function(x) {
@@ -50,10 +50,10 @@ Date2decimal <- function(x) {
 
 ##' convert decimal format to Date, eg "2014.34" to "2014-05-05"
 ##'
-##'
-##' @title decimal2Date
-##' @param x numerical number, eg 2014.34
-##' @return Date
+##' @param x numeric year with fraction, e.g. 2014.34.
+##' @return a Date.
+##' @examples
+##' decimal2Date(2014.34)
 ##' @export
 ##' @author Guangchuang Yu
 decimal2Date <- function(x) {

@@ -13,13 +13,7 @@
 #include <cmath>
 #include <vector>
 
-// Rcpp's Matrix/Vector operator() takes a signed index type; indexing with int
-// is the idiomatic form across every Rcpp package. -Wsign-conversion flags the
-// implicit int -> size_t inside the STL containers anyway, and silencing it
-// here reads better than casting at 40 call sites. --as-cran does not enable
-// -Wsign-conversion, so this only affects developers compiling with -Wextra.
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsign-conversion"
+
 
 using namespace Rcpp;
 
@@ -167,5 +161,3 @@ NumericMatrix tree_and_leaf_relax_cpp(NumericMatrix positions,
 
     return positions;
 }
-
-#pragma GCC diagnostic pop

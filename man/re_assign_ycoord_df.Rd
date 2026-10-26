@@ -6,7 +6,21 @@
 \usage{
 re_assign_ycoord_df(df, currentNode)
 }
-\description{
-Re-assign y coordinates
+\arguments{
+\item{df}{a node table with \code{node}, \code{parent} and \code{y} columns.}
+
+\item{currentNode}{node ids to start the fill from, usually the tips.}
 }
-\keyword{internal}
+\value{
+the node table with the missing y values replaced.
+}
+\description{
+Fills in missing y values bottom-up: every node whose \code{y} is \code{NA} gets the
+mean of its children's y values. Rows with a y value already present are
+left untouched.
+}
+\examples{
+d <- tree_layout(ape::rtree(6))
+d$y[c(2, 3)] <- NA
+re_assign_ycoord_df(d, currentNode = d$node[d$isTip])
+}

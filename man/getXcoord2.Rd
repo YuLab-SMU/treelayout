@@ -6,7 +6,35 @@
 \usage{
 getXcoord2(x, root, parent, child, len, start = 0, rev = FALSE)
 }
-\description{
-x coordinates from an edge list
+\arguments{
+\item{x}{numeric vector indexed by node id; the first entry is overwritten
+with \code{start}.}
+
+\item{root}{node id to start from.}
+
+\item{parent}{parent node ids of the edge list.}
+
+\item{child}{child node ids of the edge list.}
+
+\item{len}{branch length of every edge.}
+
+\item{start}{x coordinate assigned to the root, default 0.}
+
+\item{rev}{logical; if TRUE the tree is walked in reverse, so coordinates
+decrease from the root.}
 }
-\keyword{internal}
+\value{
+the \code{x} vector with one coordinate per node.
+}
+\description{
+Computes the x coordinate of every node by walking the edge list from a
+starting root position. Used by code that recomputes horizontal placement
+after changing the tree order.
+}
+\examples{
+tr <- ape::rtree(6)
+x <- numeric(max(tr$edge))
+getXcoord2(x, root = ape::Ntip(tr) + 1L,
+           parent = tr$edge[, 1], child = tr$edge[, 2],
+           len = tr$edge.length)
+}

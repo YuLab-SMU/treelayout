@@ -1,8 +1,13 @@
 #' Calculate angle coordinates for circular layouts
 #'
-#' @param data A data frame containing tree node coordinates
-#' @return A data frame with added 'angle' column
-#' @keywords internal
+#' Adds an `angle` column holding the label angle for every node, derived from
+#' the node's position and its parent.
+#'
+#' @param data a node table with `x`, `y`, `node` and `parent` columns.
+#' @return the node table with an `angle` column added.
+#' @examples
+#' d <- tree_layout(ape::rtree(6), layout = "circular")
+#' calculate_angle(d)
 #' @export
 calculate_angle <- function(data) {
     if (!"y" %in% names(data)) {

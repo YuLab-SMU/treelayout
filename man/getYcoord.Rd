@@ -6,7 +6,24 @@
 \usage{
 getYcoord(tr, step = 1, tip.order = NULL)
 }
-\description{
-y coordinates for tips
+\arguments{
+\item{tr}{a \code{phylo} object.}
+
+\item{step}{spacing between adjacent tips, default 1.}
+
+\item{tip.order}{tip labels in the order they should appear bottom to top;
+\code{NULL} keeps the existing tip order.}
 }
-\keyword{internal}
+\value{
+numeric vector of y coordinates, indexed like the nodes of \code{tr}.
+}
+\description{
+Places tips on evenly spaced y positions (or in the order given by
+\code{tip.order}) and fills the internal nodes bottom-up with the mean of their
+children.
+}
+\examples{
+tr <- ape::rtree(6)
+getYcoord(tr)
+getYcoord(tr, tip.order = rev(tr$tip.label))
+}

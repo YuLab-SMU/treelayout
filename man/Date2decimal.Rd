@@ -2,18 +2,21 @@
 % Please edit documentation in R/date.R
 \name{Date2decimal}
 \alias{Date2decimal}
-\title{Date2decimal}
+\title{convert Date to decimal format, eg "2014-05-05" to "2014.34"}
 \usage{
 Date2decimal(x)
 }
 \arguments{
-\item{x}{Date}
+\item{x}{a Date, or a numeric that is passed through unchanged.}
 }
 \value{
-numeric
+numeric year with fraction, e.g. 2014.34.
 }
 \description{
 convert Date to decimal format, eg "2014-05-05" to "2014.34"
+}
+\examples{
+Date2decimal(as.Date("2014-05-05"))
 }
 \author{
 Guangchuang Yu

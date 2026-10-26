@@ -7,12 +7,16 @@
 calculate_angle(data)
 }
 \arguments{
-\item{data}{A data frame containing tree node coordinates}
+\item{data}{a node table with \code{x}, \code{y}, \code{node} and \code{parent} columns.}
 }
 \value{
-A data frame with added 'angle' column
+the node table with an \code{angle} column added.
 }
 \description{
-Calculate angle coordinates for circular layouts
+Adds an \code{angle} column holding the label angle for every node, derived from
+the node's position and its parent.
 }
-\keyword{internal}
+\examples{
+d <- tree_layout(ape::rtree(6), layout = "circular")
+calculate_angle(d)
+}

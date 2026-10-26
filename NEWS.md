@@ -1,6 +1,6 @@
-# treelayout 0.0.0.9000
+# treelayout 0.1.0
 
-First release. `treelayout` is the layout engine extracted from
+First CRAN release. `treelayout` is the layout engine extracted from
 [ggtree](https://github.com/YuLab-SMU/ggtree), so that tree coordinates can be
 computed without a plotting dependency.
 

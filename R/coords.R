@@ -1104,7 +1104,26 @@ getNodes_by_postorder <- function(tree) {
 
 ##' x coordinates from an edge list
 ##'
-##' @keywords internal
+##' Computes the x coordinate of every node by walking the edge list from a
+##' starting root position. Used by code that recomputes horizontal placement
+##' after changing the tree order.
+##'
+##' @param x numeric vector indexed by node id; the first entry is overwritten
+##'   with `start`.
+##' @param root node id to start from.
+##' @param parent parent node ids of the edge list.
+##' @param child child node ids of the edge list.
+##' @param len branch length of every edge.
+##' @param start x coordinate assigned to the root, default 0.
+##' @param rev logical; if TRUE the tree is walked in reverse, so coordinates
+##'   decrease from the root.
+##' @return the `x` vector with one coordinate per node.
+##' @examples
+##' tr <- ape::rtree(6)
+##' x <- numeric(max(tr$edge))
+##' getXcoord2(x, root = ape::Ntip(tr) + 1L,
+##'            parent = tr$edge[, 1], child = tr$edge[, 2],
+##'            len = tr$edge.length)
 ##' @export
 getXcoord2 <- function(x, root, parent, child, len, start=0, rev=FALSE) {
     x[root] <- start
@@ -1452,7 +1471,19 @@ getYcoord_tidy <- function(tr, x, step = 1, extra.tip.padding = 0.01) {
 ## @importFrom magrittr %>%
 ##' y coordinates for tips
 ##'
-##' @keywords internal
+##' Places tips on evenly spaced y positions (or in the order given by
+##' `tip.order`) and fills the internal nodes bottom-up with the mean of their
+##' children.
+##'
+##' @param tr a `phylo` object.
+##' @param step spacing between adjacent tips, default 1.
+##' @param tip.order tip labels in the order they should appear bottom to top;
+##'   `NULL` keeps the existing tip order.
+##' @return numeric vector of y coordinates, indexed like the nodes of `tr`.
+##' @examples
+##' tr <- ape::rtree(6)
+##' getYcoord(tr)
+##' getYcoord(tr, tip.order = rev(tr$tip.label))
 ##' @export
 getYcoord <- function(tr, step=1, tip.order = NULL) {
     Ntip <- length(tr[["tip.label"]])
@@ -1633,7 +1664,18 @@ add_angle_slanted <- function(res) {
 
 ##' Branch mid-point coordinates
 ##'
-##' @keywords internal
+##' Adds `branch` (the mid-point x), and for the unrooted layouts also
+##' `branch.x` and `branch.y`, which place labels on the middle of a branch
+##' even when the branch is not axis-aligned.
+##'
+##' @param res a node table with `node`, `parent`, `x` and `y` columns.
+##' @param layout the layout name the coordinates came from; `branch.x` and
+##'   `branch.y` are only computed for the unrooted layouts.
+##' @return the node table with the branch columns added.
+##' @examples
+##' tr <- ape::rtree(6)
+##' d <- tree_layout(tr, layout = "equal_angle")
+##' calculate_branch_mid(d, layout = "equal_angle")
 ##' @export
 calculate_branch_mid <- function(res, layout) {
     if (layout %in% c("equal_angle", "daylight", "ape", "tree_and_leaf")){
@@ -1654,7 +1696,17 @@ calculate_branch_mid <- function(res, layout) {
 
 ##' Re-assign y coordinates
 ##'
-##' @keywords internal
+##' Fills in missing y values bottom-up: every node whose `y` is `NA` gets the
+##' mean of its children's y values. Rows with a y value already present are
+##' left untouched.
+##'
+##' @param df a node table with `node`, `parent` and `y` columns.
+##' @param currentNode node ids to start the fill from, usually the tips.
+##' @return the node table with the missing y values replaced.
+##' @examples
+##' d <- tree_layout(ape::rtree(6))
+##' d$y[c(2, 3)] <- NA
+##' re_assign_ycoord_df(d, currentNode = d$node[d$isTip])
 ##' @export
 re_assign_ycoord_df <- function(df, currentNode) {
     while(anyNA(df$y)) {

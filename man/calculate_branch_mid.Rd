@@ -6,7 +6,22 @@
 \usage{
 calculate_branch_mid(res, layout)
 }
-\description{
-Branch mid-point coordinates
+\arguments{
+\item{res}{a node table with \code{node}, \code{parent}, \code{x} and \code{y} columns.}
+
+\item{layout}{the layout name the coordinates came from; \code{branch.x} and
+\code{branch.y} are only computed for the unrooted layouts.}
 }
-\keyword{internal}
+\value{
+the node table with the branch columns added.
+}
+\description{
+Adds \code{branch} (the mid-point x), and for the unrooted layouts also
+\code{branch.x} and \code{branch.y}, which place labels on the middle of a branch
+even when the branch is not axis-aligned.
+}
+\examples{
+tr <- ape::rtree(6)
+d <- tree_layout(tr, layout = "equal_angle")
+calculate_branch_mid(d, layout = "equal_angle")
+}

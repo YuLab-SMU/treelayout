@@ -1,6 +1,6 @@
 Package: treelayout
-Title: Tree Layout Algorithms
-Version: 0.0.0.9000
+Title: Tree Layout Algorithms for Phylogenetic Trees and Other Tree-Like Structures
+Version: 0.1.0
 Authors@R: c(
     person("Guangchuang", "Yu", email = "guangchuangyu@gmail.com",
            role = c("aut", "cre", "cph"),
@@ -11,6 +11,8 @@ Description: Computes node coordinates for phylogenetic trees and other
     y coordinates, ready for plotting by any graphics system. This is the
     layout engine used by the 'ggtree' package, extracted so that the
     coordinate computation can be used without a plotting dependency.
+    Implements the equal-angle and equal-daylight unrooted tree layout
+    methods (Meacham 1985; Wilgenbusch & Felsenstein 2003).
 License: Artistic-2.0
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
