@@ -678,18 +678,36 @@ applyLayoutDaylight <- function(df, node_id, cache = NULL){
   parent_nodes <- subtree_node_ids[subtree_node_ids != origin_id]
   parent_nodes <- parent_nodes[cache$has_children[parent_nodes]]
 
+  ## Angle of every node the loop below looks at, in one vectorised atan2().
+  ##
+  ## atan2() is a pure function, so this is bit-identical to calling
+  ## getNodeAngle.vector() per node, which is what dominated the profile: the
+  ## inner loop ran once per descendant per subtree, per round.
+  ##
+  ## Only the *angles* are hoisted. The loop itself keeps its original order:
+  ## `arc` is updated in place and every comparison reads the value written by
+  ## the previous iteration, so reordering it or replacing the accumulation
+  ## with max()/min() would change the result.
+  children_of <- cache$children
+  looked_at <- unique(c(parent_nodes,
+                        unlist(children_of[parent_nodes], use.names = FALSE)))
+  theta_by_id <- rep.int(NA_real_, length(row_index))
+  if (length(looked_at) > 0L) {
+    rows <- row_index[looked_at]
+    theta_by_id[looked_at] <- getNodeAngle.vector(x_origin, y_origin,
+                                                  df_x[rows], df_y[rows])
+  }
+
   for (parent_id in parent_nodes) {
-    parent_row <- row_index[parent_id]
-    theta_parent <- getNodeAngle.vector(x_origin, y_origin, df_x[parent_row], df_y[parent_row])
-    child_ids <- cache$children[[parent_id]]
+    theta_parent <- theta_by_id[parent_id]
+    child_ids <- children_of[[parent_id]]
     child_ids <- child_ids[child_ids != origin_id]
     if (length(child_ids) == 0L) {
       next
     }
 
     for (child_id in child_ids) {
-      child_row <- row_index[child_id]
-      theta_child <- getNodeAngle.vector(x_origin, y_origin, df_x[child_row], df_y[child_row])
+      theta_child <- theta_by_id[child_id]
       if ((arc['left'] < arc['right'] && !(theta_child > arc['left'] && theta_child < arc['right'])) ||
           (arc['left'] > arc['right'] && (theta_child < arc['left'] && theta_child > arc['right']))) {
         next
