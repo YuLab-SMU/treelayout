@@ -8,6 +8,12 @@
 // into a max()/min() changes the output. Keep the order.
 
 #include <Rcpp.h>
+
+// std::atan2, std::fabs, std::isnan and std::acos come from <cmath>; Rcpp.h
+// happens to pull it in on gcc, but MSVC is not obliged to.
+#include <cmath>
+#include <vector>
+
 using namespace Rcpp;
 
 // M_PI is not defined by <cmath> on MSVC without _USE_MATH_DEFINES, so compute
