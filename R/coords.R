@@ -285,6 +285,15 @@ layoutDaylight <- function(model, branch.length, MAX_COUNT=5 ){
 
     ## Initialize tree.
     tree_df <- layoutEqualAngle(model, branch.length)
+    ## The rotation below assigns into df$x / df$y thousands of times. On a
+    ## tbl_df each of those goes through tbl_subassign(), which showed up as
+    ## ~25% of the profile; a plain data.frame is the same object underneath and
+    ## is converted back once the rounds finish.
+    ## Keep the tbl_tree class: the cache builder calls offspring(), which
+    ## dispatches on it. Only the tbl_df wrapping is dropped, which is what took
+    ## the tbl_subassign() detour on every assignment.
+    tree_df <- as.data.frame(tree_df, stringsAsFactors = FALSE)
+    class(tree_df) <- c("tbl_tree", "data.frame")
     cache <- .daylightBuildCache(tree_df)
     nodes <- cache$internal_nodes
 
@@ -616,6 +625,19 @@ applyLayoutDaylight <- function(df, node_id, cache = NULL){
   angle_left <- numeric(n_subtrees)
   angle_beta <- numeric(n_subtrees)
 
+  ## One reusable theta buffer per layout call. Filled per subtree rather than
+  ## per origin, because rotating the earlier subtrees moves the later ones and
+  ## changes their angles. The buffer is reused, so the allocation that used to
+  ## dominate (2996 calls x 16 KB at 1000 tips) is gone.
+  if (.daylight_use_cpp()) {
+    if (is.null(cache$df_x_num)) {
+      cache$row_index_int <- as.integer(cache$row_index)
+      cache$has_children_lgl <- as.logical(cache$has_children)
+      cache$theta_buffer <- numeric(nrow(df))
+      cache$df_x_num <- TRUE   # marks the fields above as initialised
+    }
+  }
+
   for (i in seq_len(n_subtrees)) {
     arc <- .daylightGetArcAngles(df, node_id, subtrees[[i]], cache)
     angle_left[i] <- arc[['left']]
@@ -780,6 +802,30 @@ applyLayoutDaylight <- function(df, node_id, cache = NULL){
   ## theta_left/theta_right are already resolved at this point, so the switch
   ## covers only the loop.
   if (.daylight_use_cpp()) {
+    ## theta_by_id is prepared once per origin by applyLayoutDaylight() (see
+    ## .daylight_theta_cache), so the subtrees of the same origin share it
+    ## instead of each allocating a full-length scratch vector.
+    if (!is.null(cache$theta_buffer)) {
+      theta <- cache$theta_buffer
+      daylight_fill_theta_cpp(
+        df_x = as.numeric(df$x), df_y = as.numeric(df$y),
+        row_index = cache$row_index_int,
+        origin_id = as.integer(origin_id),
+        node_ids = as.integer(subtree$subtree),
+        theta_by_id = theta
+      )
+      return(daylight_arc_angles_cached_cpp(
+        df_x = as.numeric(df$x), df_y = as.numeric(df$y),
+        row_index = cache$row_index_int,
+        origin_id = as.integer(origin_id),
+        subtree_node_ids = as.integer(subtree$subtree),
+        children = cache$children,
+        has_children = cache$has_children_lgl,
+        theta_left_start = as.numeric(theta_left),
+        theta_right_start = as.numeric(theta_right),
+        theta_by_id = theta
+      ))
+    }
     return(.daylight_arc_cpp(df, origin_id, subtree, cache, theta_left, theta_right))
   }
 

@@ -29,6 +29,41 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// daylight_arc_angles_cached_cpp
+NumericVector daylight_arc_angles_cached_cpp(const NumericVector& df_x, const NumericVector& df_y, const IntegerVector& row_index, int origin_id, const IntegerVector& subtree_node_ids, const List& children, const LogicalVector& has_children, double theta_left_start, double theta_right_start, NumericVector& theta_by_id);
+RcppExport SEXP _treelayout_daylight_arc_angles_cached_cpp(SEXP df_xSEXP, SEXP df_ySEXP, SEXP row_indexSEXP, SEXP origin_idSEXP, SEXP subtree_node_idsSEXP, SEXP childrenSEXP, SEXP has_childrenSEXP, SEXP theta_left_startSEXP, SEXP theta_right_startSEXP, SEXP theta_by_idSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericVector& >::type df_x(df_xSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type df_y(df_ySEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type row_index(row_indexSEXP);
+    Rcpp::traits::input_parameter< int >::type origin_id(origin_idSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type subtree_node_ids(subtree_node_idsSEXP);
+    Rcpp::traits::input_parameter< const List& >::type children(childrenSEXP);
+    Rcpp::traits::input_parameter< const LogicalVector& >::type has_children(has_childrenSEXP);
+    Rcpp::traits::input_parameter< double >::type theta_left_start(theta_left_startSEXP);
+    Rcpp::traits::input_parameter< double >::type theta_right_start(theta_right_startSEXP);
+    Rcpp::traits::input_parameter< NumericVector& >::type theta_by_id(theta_by_idSEXP);
+    rcpp_result_gen = Rcpp::wrap(daylight_arc_angles_cached_cpp(df_x, df_y, row_index, origin_id, subtree_node_ids, children, has_children, theta_left_start, theta_right_start, theta_by_id));
+    return rcpp_result_gen;
+END_RCPP
+}
+// daylight_fill_theta_cpp
+void daylight_fill_theta_cpp(const NumericVector& df_x, const NumericVector& df_y, const IntegerVector& row_index, int origin_id, const IntegerVector& node_ids, NumericVector& theta_by_id);
+RcppExport SEXP _treelayout_daylight_fill_theta_cpp(SEXP df_xSEXP, SEXP df_ySEXP, SEXP row_indexSEXP, SEXP origin_idSEXP, SEXP node_idsSEXP, SEXP theta_by_idSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericVector& >::type df_x(df_xSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type df_y(df_ySEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type row_index(row_indexSEXP);
+    Rcpp::traits::input_parameter< int >::type origin_id(origin_idSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type node_ids(node_idsSEXP);
+    Rcpp::traits::input_parameter< NumericVector& >::type theta_by_id(theta_by_idSEXP);
+    daylight_fill_theta_cpp(df_x, df_y, row_index, origin_id, node_ids, theta_by_id);
+    return R_NilValue;
+END_RCPP
+}
 // tree_and_leaf_relax_cpp
 NumericMatrix tree_and_leaf_relax_cpp(NumericMatrix positions, const NumericVector& depth_norm, const IntegerVector& tip_rows, const IntegerVector& internal_rows, int root_row, const IntegerVector& edge_parent_rows, const IntegerVector& edge_child_rows, const NumericVector& target_edge_length, const NumericVector& outward_dir, const NumericVector& mobility, const IntegerVector& node_ids, double leaf_force, double edge_force, double anchor_force, double internal_anchor, double outward_force, double step, double cooling, double tol, int max_iter);
 RcppExport SEXP _treelayout_tree_and_leaf_relax_cpp(SEXP positionsSEXP, SEXP depth_normSEXP, SEXP tip_rowsSEXP, SEXP internal_rowsSEXP, SEXP root_rowSEXP, SEXP edge_parent_rowsSEXP, SEXP edge_child_rowsSEXP, SEXP target_edge_lengthSEXP, SEXP outward_dirSEXP, SEXP mobilitySEXP, SEXP node_idsSEXP, SEXP leaf_forceSEXP, SEXP edge_forceSEXP, SEXP anchor_forceSEXP, SEXP internal_anchorSEXP, SEXP outward_forceSEXP, SEXP stepSEXP, SEXP coolingSEXP, SEXP tolSEXP, SEXP max_iterSEXP) {
@@ -62,6 +97,8 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_treelayout_daylight_arc_angles_cpp", (DL_FUNC) &_treelayout_daylight_arc_angles_cpp, 9},
+    {"_treelayout_daylight_arc_angles_cached_cpp", (DL_FUNC) &_treelayout_daylight_arc_angles_cached_cpp, 10},
+    {"_treelayout_daylight_fill_theta_cpp", (DL_FUNC) &_treelayout_daylight_fill_theta_cpp, 6},
     {"_treelayout_tree_and_leaf_relax_cpp", (DL_FUNC) &_treelayout_tree_and_leaf_relax_cpp, 20},
     {NULL, NULL, 0}
 };
