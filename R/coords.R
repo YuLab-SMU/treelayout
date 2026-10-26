@@ -821,19 +821,6 @@ getTreeArcAngles <- function(df, origin_id, subtree) {
   .daylightGetArcAngles(df, origin_id, subtree, .daylightBuildCache(df))
 }
 
-##' Rotate the points in a tree data.frame around a pivot node by the angle specified.
-##'
-##' @title rotateTreePoints.data.frame
-##' @rdname rotateTreePoints
-##' @param df tree data.frame
-##' @param pivot_node is the id of the pivot node.
-##' @param nodes list of node numbers that are to be rotated by angle around the pivot_node
-##' @param angle in range `[0,2]`, ie degrees/180, radians/pi
-##' @return updated tree data.frame with points rotated by angle
-rotateTreePoints.df <- function(df, pivot_node, nodes, angle){
-  .daylightRotatePoints(df, pivot_node, nodes, angle, .daylightBuildCache(df))
-}
-
 .daylightRotatePoints <- function(df, pivot_node, nodes, angle, cache) {
   node_rows <- cache$row_index[nodes]
   node_rows <- node_rows[!is.na(node_rows)]
@@ -989,36 +976,6 @@ getSubtreeUnrooted <- function(tree, node){
 }
 
 
-##' Get all subtrees of node, as well as remaining branches of parent (ie, rest of tree structure as subtree)
-##' return named list of subtrees with list name as starting node id.
-##' @title getSubtreeUnrooted
-##' @param df tree data.frame
-##' @param node is the tree node id from which the subtrees are derived.
-##' @importFrom tidytree parent
-##' @return named list of subtrees with the root id of subtree and list of node id's making up subtree.
-getSubtreeUnrooted.df <- function(df, node){
-  # get subtree for each child node.
-                                        # children_ids <- getChild.df(df, node)
-    children_ids <- .child.tbl_tree(df, node)$node
-  if (length(children_ids) == 0L) return(NULL)
-  # if node leaf, return nothing.
-
-  subtrees = tibble::tibble(
-    node = children_ids,
-    subtree = purrr::map(.data$node, ~getSubtree.df(df, .x))
-  )
-  remaining_nodes = setdiff(df$node, purrr::flatten_int(subtrees$subtree))
-
-  # The remaining nodes that are not found in the child subtrees are the remaining subtree nodes.
-  # ie, parent node and all other nodes. We don't care how they are connected, just their id.
-  parent_id <- .parent.tbl_tree(df, node)$node
-  # If node is not root.
-  if ((length(parent_id) > 0) & (length(remaining_nodes) > 0)) {
-    subtrees = tibble::add_row(subtrees, node = parent_id, subtree = list(remaining_nodes))
-  }
-  purrr::transpose(subtrees)
-}
-
 
 ##' @keywords internal
 ##' @noRd
@@ -1073,22 +1030,7 @@ getNodesBreadthFirst.df <- function(df){
 }
 
 
-isRoot <- function(tr, node) {
-    getRoot(tr) == node
-}
 
-getNodeName <- function(tr) {
-    if (is.null(tr$node.label)) {
-        n <- length(tr$tip.label)
-        nl <- (n + 1):(2 * n - 2)
-        nl <- as.character(nl)
-    }
-    else {
-        nl <- tr$node.label
-    }
-    nodeName <- c(tr$tip.label, nl)
-    return(nodeName)
-}
 ##' Node ids in post-order
 ##'
 ##' @param tree a `phylo` object.

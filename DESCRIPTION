@@ -21,7 +21,6 @@ Imports:
     methods,
     Rcpp,
     dplyr,
-    purrr,
     rlang,
     stats,
     tibble,

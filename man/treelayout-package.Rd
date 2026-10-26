@@ -4,7 +4,7 @@
 \name{treelayout-package}
 \alias{treelayout}
 \alias{treelayout-package}
-\title{treelayout: Tree Layout Algorithms}
+\title{treelayout: Tree Layout Algorithms for Phylogenetic Trees and Other Tree-Like Structures}
 \description{
 Computes node coordinates for phylogenetic trees and other tree-like structures. Given a tree, returns one row per node with x and y coordinates, ready for plotting by any graphics system. This is the layout engine used by the 'ggtree' package, extracted so that the coordinate computation can be used without a plotting dependency.
 }
