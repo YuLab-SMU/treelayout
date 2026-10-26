@@ -29,9 +29,40 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// tree_and_leaf_relax_cpp
+NumericMatrix tree_and_leaf_relax_cpp(NumericMatrix positions, const NumericVector& depth_norm, const IntegerVector& tip_rows, const IntegerVector& internal_rows, int root_row, const IntegerVector& edge_parent_rows, const IntegerVector& edge_child_rows, const NumericVector& target_edge_length, const NumericVector& outward_dir, const NumericVector& mobility, const IntegerVector& node_ids, double leaf_force, double edge_force, double anchor_force, double internal_anchor, double outward_force, double step, double cooling, double tol, int max_iter);
+RcppExport SEXP _treelayout_tree_and_leaf_relax_cpp(SEXP positionsSEXP, SEXP depth_normSEXP, SEXP tip_rowsSEXP, SEXP internal_rowsSEXP, SEXP root_rowSEXP, SEXP edge_parent_rowsSEXP, SEXP edge_child_rowsSEXP, SEXP target_edge_lengthSEXP, SEXP outward_dirSEXP, SEXP mobilitySEXP, SEXP node_idsSEXP, SEXP leaf_forceSEXP, SEXP edge_forceSEXP, SEXP anchor_forceSEXP, SEXP internal_anchorSEXP, SEXP outward_forceSEXP, SEXP stepSEXP, SEXP coolingSEXP, SEXP tolSEXP, SEXP max_iterSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type positions(positionsSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type depth_norm(depth_normSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type tip_rows(tip_rowsSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type internal_rows(internal_rowsSEXP);
+    Rcpp::traits::input_parameter< int >::type root_row(root_rowSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type edge_parent_rows(edge_parent_rowsSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type edge_child_rows(edge_child_rowsSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type target_edge_length(target_edge_lengthSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type outward_dir(outward_dirSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type mobility(mobilitySEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type node_ids(node_idsSEXP);
+    Rcpp::traits::input_parameter< double >::type leaf_force(leaf_forceSEXP);
+    Rcpp::traits::input_parameter< double >::type edge_force(edge_forceSEXP);
+    Rcpp::traits::input_parameter< double >::type anchor_force(anchor_forceSEXP);
+    Rcpp::traits::input_parameter< double >::type internal_anchor(internal_anchorSEXP);
+    Rcpp::traits::input_parameter< double >::type outward_force(outward_forceSEXP);
+    Rcpp::traits::input_parameter< double >::type step(stepSEXP);
+    Rcpp::traits::input_parameter< double >::type cooling(coolingSEXP);
+    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
+    Rcpp::traits::input_parameter< int >::type max_iter(max_iterSEXP);
+    rcpp_result_gen = Rcpp::wrap(tree_and_leaf_relax_cpp(positions, depth_norm, tip_rows, internal_rows, root_row, edge_parent_rows, edge_child_rows, target_edge_length, outward_dir, mobility, node_ids, leaf_force, edge_force, anchor_force, internal_anchor, outward_force, step, cooling, tol, max_iter));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_treelayout_daylight_arc_angles_cpp", (DL_FUNC) &_treelayout_daylight_arc_angles_cpp, 9},
+    {"_treelayout_tree_and_leaf_relax_cpp", (DL_FUNC) &_treelayout_tree_and_leaf_relax_cpp, 20},
     {NULL, NULL, 0}
 };
 

@@ -67,6 +67,11 @@ test_that("compiled daylight respects MAX_COUNT the same way", {
 test_that("tree_and_leaf inherits the compiled daylight seed layout", {
     ## tree_and_leaf starts from layoutDaylight(); switching the compiled path
     ## must not change its starting point, and therefore not its result.
+    ##
+    ## Unlike the daylight arc accumulation, the relaxation sums tip-tip force
+    ## contributions pairwise in C++ but through colSums() in R, so the two
+    ## differ at the last bit of floating point (~1e-15). Identical() would
+    ## reject that; the tolerance here is still far below anything visible.
     set.seed(2)
     tr <- ape::rtree(30)
     old <- getOption("treelayout.daylight_cpp")
@@ -77,6 +82,6 @@ test_that("tree_and_leaf inherits the compiled daylight seed layout", {
     options(treelayout.daylight_cpp = TRUE)
     got <- suppressWarnings(tree_layout(tr, layout = "tree_and_leaf"))
 
-    expect_identical(got$x, ref$x)
-    expect_identical(got$y, ref$y)
+    expect_equal(got$x, ref$x, tolerance = 1e-12)
+    expect_equal(got$y, ref$y, tolerance = 1e-12)
 })

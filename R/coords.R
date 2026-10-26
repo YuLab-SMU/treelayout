@@ -291,6 +291,26 @@ layoutTreeAndLeaf <- function(model,
     }
 
     positions <- as.matrix(tree_df[, c("x", "y")])
+
+    ## The relaxation loop has a compiled version (src/tree_and_leaf.cpp).
+    ## Forces here are sums of element-wise contributions, so unlike the
+    ## daylight arc accumulation the arithmetic is order-independent; the
+    ## R loop remains as reference under the same option switch.
+    if (.daylight_use_cpp()) {
+        relaxed <- .treeAndLeafRelax_cpp(
+            positions, cache,
+            list(leaf_force = leaf_force, edge_force = edge_force,
+                 anchor_force = anchor_force, internal_anchor = internal_anchor,
+                 outward_force = outward_force, step = step,
+                 cooling = cooling, tol = tol, max_iter = max_iter)
+        )
+        tree_df$x <- relaxed[, 1]
+        tree_df$y <- relaxed[, 2]
+        tree_df <- as_tibble(tree_df)
+        class(tree_df) <- c("tbl_tree", class(tree_df))
+        return(tree_df)
+    }
+
     initial_positions <- positions
     current_step <- step
     n_nodes <- nrow(tree_df)

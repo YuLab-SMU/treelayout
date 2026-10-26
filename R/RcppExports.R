@@ -5,3 +5,7 @@ daylight_arc_angles_cpp <- function(df_x, df_y, row_index, origin_id, subtree_no
     .Call(`_treelayout_daylight_arc_angles_cpp`, df_x, df_y, row_index, origin_id, subtree_node_ids, children, has_children, theta_left_start, theta_right_start)
 }
 
+tree_and_leaf_relax_cpp <- function(positions, depth_norm, tip_rows, internal_rows, root_row, edge_parent_rows, edge_child_rows, target_edge_length, outward_dir, mobility, node_ids, leaf_force, edge_force, anchor_force, internal_anchor, outward_force, step, cooling, tol, max_iter) {
+    .Call(`_treelayout_tree_and_leaf_relax_cpp`, positions, depth_norm, tip_rows, internal_rows, root_row, edge_parent_rows, edge_child_rows, target_edge_length, outward_dir, mobility, node_ids, leaf_force, edge_force, anchor_force, internal_anchor, outward_force, step, cooling, tol, max_iter)
+}
+
