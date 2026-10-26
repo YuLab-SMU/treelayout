@@ -29,6 +29,80 @@ set_branch_length_cladogram <- function(tree) {
     return(tree)
 }
 
+## Node -> children and node -> parent as plain lookup structures, built once.
+##
+## `child(tree, v)` / `parent(tree, v)` scan the whole edge list on every call,
+## so using them inside a per-node loop is O(n^2) on a ladder-like tree. These
+## give the same answers in O(1) per lookup.
+.children_index <- function(tree) {
+    edge <- tree[["edge"]]
+    parent <- edge[, 1]
+    child <- edge[, 2]
+    n <- max(edge)
+    cl <- split(child, parent)
+    out <- vector("list", n)
+    out[as.integer(names(cl))] <- cl
+    for (i in seq_len(n)) {
+        out[[i]] <- if (is.null(out[[i]])) integer() else as.integer(out[[i]])
+    }
+    out
+}
+
+.parent_index <- function(tree) {
+    edge <- tree[["edge"]]
+    n <- max(edge)
+    out <- integer(n)
+    out[edge[, 2]] <- edge[, 1]
+    out
+}
+
+## Slanted coordinates straight from the tree.
+##
+## The generic path built an n_tip x n_node indicator matrix (sbp) and then took
+## colSums() and a weighted colMeans() of it. That matrix is O(n^2) in memory and
+## the rbind() to assemble it dominated the profile (74% in `c()`), which is why
+## `slanted` took 4.7 s at 2000 ladder tips. Both summaries are simple enough to
+## accumulate in one upward pass:
+##
+##   x[node] = -(number of tips under node)
+##   y[node] = mean of the 1-based tip rows under node
+##
+## Row order matches sbp, whose rows are the tips in `.nodeId(tree, "tips")`
+## order; for a phylo that is 1..n_tip, and the tip label order of the tree is
+## what getXcoord_no_length_slanted() then re-sorts by node id anyway.
+.slanted_coords <- function(tree) {
+    edge <- tree[["edge"]]
+    parent <- edge[, 1]
+    child <- edge[, 2]
+    n <- max(edge)
+    n_tip <- length(tree[["tip.label"]])
+
+    n_desc <- integer(n)
+    sum_row <- numeric(n)
+    ## tips numbered by their position in the edge list, as `.nodeId()` does
+    tip_ids <- child[!(child %in% parent)]
+    n_desc[tip_ids] <- 1L
+    sum_row[tip_ids] <- seq_along(tip_ids)
+
+    parent_of <- .parent_index(tree)
+    for (v in order(ape::node.depth(tree))) {
+        p <- parent_of[v]
+        if (p != 0L) {
+            n_desc[p] <- n_desc[p] + n_desc[v]
+            sum_row[p] <- sum_row[p] + sum_row[v]
+        }
+    }
+
+    xs <- -n_desc
+    xs <- xs + max(abs(xs))
+
+    ys <- ifelse(n_desc > 0L, sum_row / pmax(n_desc, 1L), NA_real_)
+    ys[n_desc == 0L] <- NA_real_
+    ys[is.nan(ys)] <- NA_real_
+
+    list(x = xs, y = ys)
+}
+
 ## Number of tips in the subtree of every node, indexed by node id.
 ##
 ## `layoutEqualAngle()` computes this with
@@ -1075,15 +1149,7 @@ getNodes_by_postorder <- function(tree) {
 ##'            len = tr$edge.length)
 ##' @export
 getXcoord2 <- function(x, root, parent, child, len, start=0, rev=FALSE) {
-    x[root] <- start
-    x[-root] <- NA  ## only root is set to start, by default 0
-
-    currentNode <- root
-    direction <- 1
-    if (rev == TRUE) {
-        direction <- -1
-    }
-
+    direction <- if (isTRUE(rev)) -1 else 1
     ignore_negative_edge <- getOption("ignore.negative.edge", default=FALSE)
 
     if (any(len < 0) && !ignore_negative_edge) {
@@ -1093,17 +1159,46 @@ getXcoord2 <- function(x, root, parent, child, len, start=0, rev=FALSE) {
                 ifelse(sum(len < 0) > 1, "edges", "edge"), ", you can set ",
                 "options(ignore.negative.edge=TRUE), then re-run ggtree.")
     }
-    while(anyNA(x)) {
-        idx <- which(parent %in% currentNode)
-        newNode <- child[idx]
-        if (ignore_negative_edge){
-            x[newNode] <- x[parent[idx]]+len[idx] * direction * sign(len[idx])
-        } else {
-            x[newNode] <- x[parent[idx]]+len[idx] * direction
-        }
-        currentNode <- newNode
+
+    step <- if (ignore_negative_edge) {
+        len * direction * sign(len)
+    } else {
+        len * direction
     }
-    
+
+    ## One top-down pass.
+    ##
+    ## The previous loop advanced one level per iteration (`parent %in% current`),
+    ## so a ladder-like tree -- depth ~ n -- cost O(n^2) and `slanted` took 4.8 s
+    ## at 2000 tips. This only has vectors, not a tree object, so the order is
+    ## derived from the edge list itself: repeatedly take nodes whose parent
+    ## already has a value, which is one pass when walked breadth-first.
+    x[root] <- start
+    x[-root] <- NA
+
+    ## children grouped by parent
+    max_id <- max(child, parent, root)
+    cl <- split(child, parent)
+    kids_of <- vector("list", max_id)
+    kids_of[as.integer(names(cl))] <- cl
+    cl_len <- split(step, parent)
+    len_of <- vector("list", max_id)
+    len_of[as.integer(names(cl_len))] <- cl_len
+
+    frontier <- root
+    while (length(frontier) > 0L) {
+        nxt <- vector("list", length(frontier))
+        for (i in seq_along(frontier)) {
+            v <- frontier[i]
+            kids <- kids_of[[v]]
+            if (length(kids) > 0L) {
+                x[kids] <- x[v] + len_of[[v]]
+                nxt[[i]] <- kids
+            }
+        }
+        frontier <- unlist(nxt, use.names = FALSE)
+    }
+
     return(x)
 }
 
@@ -1489,8 +1584,12 @@ getYcoord_scale_numeric <- function(tr, df, yscale, ...) {
     if (length(na.idx) > 0) {
         tree <- get.tree(tr)
         nodes <- getNodes_by_postorder(tree)
+        ## children once, instead of child(tree, curNode) inside the loop:
+        ## that rescanned the whole table on every node, which is O(n^2) on a
+        ## ladder-like tree
+        kids_of <- .children_index(tree)
         for (curNode in nodes) {
-            children <- child(tree, curNode)
+            children <- kids_of[[curNode]]
             if (length(children) == 0) {
                 next
             }
@@ -1515,14 +1614,18 @@ getYcoord_scale_numeric <- function(tr, df, yscale, ...) {
     if (length(na.idx) > 0) {
         tree <- get.tree(tr)
         nodes <- rev(getNodes_by_postorder(tree))
+        ## both lookups built once; the loop body used to call parent() and
+        ## child(), each of which scanned the whole table
+        kids_of <- .children_index(tree)
+        parent_of <- .parent_index(tree)
         for (curNode in nodes) {
-            parent <- parent(tree, curNode)
+            parent <- parent_of[curNode]
             if (parent == 0) { ## already reach root
                 next
             }
             idx <- which(is.na(yy[parent]))
             if (length(idx) > 0) {
-                child <- child(tree, parent)
+                child <- kids_of[[parent]]
                 yy[parent[idx]] <- mean(yy[child], na.rm=TRUE)
             }
         }

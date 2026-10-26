@@ -138,9 +138,11 @@ tree_layout <- function(model, data = NULL,
         N <- Nnode(x, internal.only = FALSE)
         if (is.null(x$edge.length) || branch.length == "none") {
             if (layout == "slanted") {
-                sbp <- .convert_tips2ancestors_sbp(x, include.root = TRUE)
-                xpos <- getXcoord_no_length_slanted(sbp)
-                ypos <- getYcoord_no_length_slanted(sbp)
+                ## straight from the tree; the sbp indicator matrix it used to
+                ## build is O(n^2) in memory
+                sl <- .slanted_coords(x)
+                xpos <- sl$x
+                ypos <- sl$y
             } else {
                 xpos <- getXcoord_no_length(x)
             }
