@@ -19,6 +19,7 @@ Depends:
 Imports:
     ape,
     methods,
+    Rcpp,
     dplyr,
     purrr,
     rlang,
@@ -26,6 +27,8 @@ Imports:
     tibble,
     tidytree (>= 0.4.5),
     utils
+LinkingTo:
+    Rcpp
 Suggests:
     igraph,
     testthat (>= 3.0.0)
@@ -34,3 +37,4 @@ ByteCompile: true
 URL: https://github.com/YuLab-SMU/treelayout
 BugReports: https://github.com/YuLab-SMU/treelayout/issues
 Config/roxygen2/version: 8.1.1
+NeedsCompilation: yes

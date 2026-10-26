@@ -12,5 +12,7 @@
 #' @importFrom tidytree as_tibble as.phylo Nnode Ntip getNodeNum
 #' @importFrom rlang .data
 #' @importFrom utils getFromNamespace
+#' @useDynLib treelayout, .registration = TRUE
+#' @importFrom Rcpp evalCpp
 #' @importFrom methods is
 NULL

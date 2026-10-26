@@ -11,6 +11,7 @@ export(get_layout)
 export(layout_names)
 export(re_assign_ycoord_df)
 export(tree_layout)
+importFrom(Rcpp,evalCpp)
 importFrom(ape,
   ladderize,
   reorder.phylo
@@ -40,3 +41,4 @@ importFrom(tidytree,
   sibling
 )
 importFrom(utils,getFromNamespace)
+useDynLib(treelayout, .registration = TRUE)

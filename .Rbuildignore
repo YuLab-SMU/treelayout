@@ -8,3 +8,6 @@ NEWS.md
 ^\.dev$
 \.vscode
 ^\.github$
+^src/.*\.o$
+^src/.*\.so$
+^src/.*\.dll$

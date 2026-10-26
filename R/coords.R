@@ -674,6 +674,14 @@ applyLayoutDaylight <- function(df, node_id, cache = NULL){
     return(c(left = 0, right = 0))
   }
 
+  ## The accumulation loop is the hot spot; it also has a compiled version
+  ## that is bit-identical (see src/daylight_arc.cpp and the parity test).
+  ## theta_left/theta_right are already resolved at this point, so the switch
+  ## covers only the loop.
+  if (.daylight_use_cpp()) {
+    return(.daylight_arc_cpp(df, origin_id, subtree, cache, theta_left, theta_right))
+  }
+
   arc <- c(left = theta_left, right = theta_right)
   parent_nodes <- subtree_node_ids[subtree_node_ids != origin_id]
   parent_nodes <- parent_nodes[cache$has_children[parent_nodes]]
