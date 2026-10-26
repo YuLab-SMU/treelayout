@@ -85,6 +85,7 @@ set_branch_length_cladogram <- function(tree) {
 ##' @param model tree object, e.g. phylo or treedata
 ##' @param branch.length set to 'none' for edge length of 1. Otherwise the phylogenetic tree edge length is used.
 ##' @return tree as data.frame with equal angle layout.
+##' @noRd
 layoutEqualAngle <- function(model, branch.length = "branch.length"){
 	tree <- as.phylo(model)
 
@@ -198,6 +199,7 @@ layoutEqualAngle <- function(model, branch.length = "branch.length"){
 ##' nodes = remove tip nodes.
 ##'
 ##' ```
+##' @noRd
 layoutDaylight <- function(model, branch.length, MAX_COUNT=5 ){
 	tree <- as.phylo(model)
 
@@ -256,6 +258,7 @@ layoutDaylight <- function(model, branch.length, MAX_COUNT=5 ){
 ##' @param tol convergence tolerance on maximum displacement.
 ##' @param ... Additional arguments reserved for compatibility with other layout helpers.
 ##' @return tree as data.frame with a TreeAndLeaf-inspired layout.
+##' @noRd
 layoutTreeAndLeaf <- function(model,
                               branch.length,
                               MAX_COUNT = 5,
@@ -521,6 +524,7 @@ layoutTreeAndLeaf <- function(model,
 ##   }
 ## }
 ## ```
+##' @noRd
 applyLayoutDaylight <- function(df, node_id, cache = NULL){
   if (is.null(cache)) {
     cache <- .daylightBuildCache(df)
@@ -855,6 +859,7 @@ getTreeArcAngles <- function(df, origin_id, subtree) {
 ##' @param origin_node_id origin node id number
 ##' @param node_id end node id number
 ##' @return angle in range `[-1, 1]`, i.e. degrees/180, radians/pi
+##' @noRd
 getNodeAngle.df <- function(df, origin_node_id, node_id){
   if (origin_node_id != node_id) {
     df_x = df$x
@@ -938,6 +943,7 @@ getSubtree.df <- function(df, node){
 ##' @param tree ape phylo tree object
 ##' @param node is the tree node id from which the subtrees are derived.
 ##' @return named list of subtrees with the root id of subtree and list of node id's making up subtree.
+##' @noRd
 getSubtreeUnrooted <- function(tree, node){
   # if node leaf, return nothing.
   if( isTip(tree, node) ){
@@ -996,6 +1002,7 @@ getSubtreeUnrooted <- function(tree, node){
 ##' @title getNodesBreadthFirst.df
 ##' @param df tree data.frame
 ##' @return list of node id's in breadth-first order.
+##' @noRd
 getNodesBreadthFirst.df <- function(df){
 
   root <- .getRoot.df(df)
