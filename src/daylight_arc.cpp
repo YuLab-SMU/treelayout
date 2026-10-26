@@ -38,9 +38,6 @@ NumericVector daylight_arc_angles_cpp(const NumericVector& df_x,
     double theta_left = theta_left_start;
     double theta_right = theta_right_start;
 
-    // Node ids are stored 1-based in R; index into `children` with id - 1.
-    const IntegerVector origin_children = children[origin_id - 1];
-
     if (std::isnan(theta_left) || subtree_node_ids.size() == 0) {
         return NumericVector::create(Named("left", 0.0), Named("right", 0.0));
     }
@@ -50,19 +47,19 @@ NumericVector daylight_arc_angles_cpp(const NumericVector& df_x,
 
     // Angles of every node the loop below reaches, computed once. atan2() is a
     // pure function, so hoisting it is bit-identical to calling it per node.
-    const int n = subtree_node_ids.size();
+    const R_xlen_t n = subtree_node_ids.size();
     std::vector<double> theta_by_id(df_x.size(), NA_REAL);
 
     {
         std::vector<int> looked_at;
         looked_at.reserve(n * 2);
-        for (int i = 0; i < n; ++i) {
+        for (R_xlen_t i = 0; i < n; ++i) {
             const int id = subtree_node_ids[i];
             if (id == origin_id) continue;
             if (!has_children[id - 1]) continue;
             looked_at.push_back(id);
             const IntegerVector ch = children[id - 1];
-            for (int j = 0; j < ch.size(); ++j) {
+            for (R_xlen_t j = 0; j < ch.size(); ++j) {
                 looked_at.push_back(ch[j]);
             }
         }
@@ -74,7 +71,7 @@ NumericVector daylight_arc_angles_cpp(const NumericVector& df_x,
         }
     }
 
-    for (int i = 0; i < n; ++i) {
+    for (R_xlen_t i = 0; i < n; ++i) {
         const int parent_id = subtree_node_ids[i];
         if (parent_id == origin_id) continue;
         if (!has_children[parent_id - 1]) continue;
@@ -83,7 +80,7 @@ NumericVector daylight_arc_angles_cpp(const NumericVector& df_x,
         const IntegerVector child_ids = children[parent_id - 1];
         if (child_ids.size() == 0) continue;
 
-        for (int j = 0; j < child_ids.size(); ++j) {
+        for (R_xlen_t j = 0; j < child_ids.size(); ++j) {
             const int child_id = child_ids[j];
             if (child_id == origin_id) continue;
 
