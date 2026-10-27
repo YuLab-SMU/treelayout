@@ -18,7 +18,25 @@ calculate_angle <- function(data) {
         warning("Y range is 0, setting all angles to 0")
         data$angle <- 0
     } else {
-        data$angle <- 360 / (y_range + 1) * data$y
+        y_max <- max(data$y, na.rm = TRUE)
+        y_min <- min(data$y, na.rm = TRUE)
+        if (y_max > y_range + 1) {
+            ## The formula below assumes the largest y is y_range + 1, which
+            ## holds while y runs 1..n -- what every layout here produces, and
+            ## also what the unrooted layouts give when their y is negative
+            ## (their y_max stays below y_range + 1).
+            ##
+            ## ggtree's scaleClade() rescales one clade and shifts the rest,
+            ## lifting the minimum above 1. y_max then exceeds y_range + 1 and
+            ## the angle passed 360 (473 at 20 tips), so the labels on that side
+            ## pointed the wrong way. #647
+            ##
+            ## Shifting y onto 1..n only in that case keeps every layout's
+            ## angles exactly as they were.
+            data$angle <- 360 * (data$y - y_min + 1) / (y_range + 1)
+        } else {
+            data$angle <- 360 / (y_range + 1) * data$y
+        }
     }
     return(data)
 }

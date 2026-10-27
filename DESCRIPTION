@@ -1,6 +1,6 @@
 Package: treelayout
 Title: Tree Layout Algorithms for Phylogenetic Trees and Other Tree-Like Structures
-Version: 0.1.0.001
+Version: 0.1.0.002
 Authors@R: c(
     person("Guangchuang", "Yu", email = "guangchuangyu@gmail.com",
            role = c("aut", "cre", "cph"),

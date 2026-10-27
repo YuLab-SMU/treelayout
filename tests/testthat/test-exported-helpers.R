@@ -119,3 +119,31 @@ test_that("getXcoord2 respects the start argument", {
                       len = tr$edge.length, start = 5)
     expect_equal(out[ape::Ntip(tr) + 1L], 5)
 })
+
+test_that("calculate_angle stays within one turn when y was shifted up", {
+    ## ggtree's scaleClade() rescales a clade and moves the rest, which lifts
+    ## the minimum y above 1. The formula assumes the largest y is y_range + 1,
+    ## so the angle ran past 360 (473 at 20 tips) and labels on that side
+    ## pointed the wrong way. #647
+    d <- suppressWarnings(tree_layout(ape::rtree(20), layout = "circular"))
+    d$y <- d$y + 6.5            # what a scaled clade leaves behind
+    out <- calculate_angle(d)
+
+    expect_true(all(out$angle >= 0 & out$angle <= 360))
+    expect_equal(max(out$angle), 360)
+    ## the spacing stays even
+    a <- sort(out$angle[out$node %in% d$node[d$isTip]])
+    expect_true(all(abs(diff(a) - diff(a)[1]) < 1e-9))
+})
+
+test_that("calculate_angle leaves the layouts' own angles alone", {
+    ## y runs 1..n for these, or is negative for the unrooted ones, and in both
+    ## cases y_max stays below y_range + 1 -- the old formula is used verbatim
+    for (ly in c("circular", "fan", "rectangular", "daylight", "equal_angle")) {
+        set.seed(42)
+        d <- suppressWarnings(tree_layout(ape::rtree(10), layout = ly))
+        y_range <- diff(range(d$y))
+        expect_equal(calculate_angle(d)$angle,
+                     360 / (y_range + 1) * d$y, tolerance = 1e-12, info = ly)
+    }
+})
