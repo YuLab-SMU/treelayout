@@ -1,4 +1,4 @@
-# treelayout 0.1.0
+# treelayout 0.1.0.003
 
 + `calculate_angle()` stays within one turn after `scaleClade()` shifts `y`; it used to pass 360 and send tip labels to the wrong side (2026-10-27, #647)
 + remove quadratic paths that made deep trees slow in `getYcoord()`, `getXcoord_no_length()`, `getXcoord2()`, `re_assign_ycoord_df()`, the `yscale` helpers and `slanted`: one post-order pass instead of one level per iteration, 1600 ladder tips from 17.7 s to 0.035 s (2026-10-27)
