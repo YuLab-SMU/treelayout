@@ -123,6 +123,14 @@ tree_layout <- function(model, data = NULL,
         }
     }
 
+    ## "unrooted" is the name ggtree users know; it has always meant the
+    ## daylight method. It was missing from .layout_names$unrooted, so it fell
+    ## through to the rectangular branch and silently returned a rectangular
+    ## layout while still reporting attr(,"layout") == "unrooted".
+    if (identical(layout, "unrooted")) {
+        layout <- "daylight"
+    }
+
     if (!is.null(external)) {
         res <- .layout_external(model, x, external, root.position, node_table, ...)
     } else if (layout %in% .layout_names$unrooted) {

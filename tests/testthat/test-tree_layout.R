@@ -6,7 +6,10 @@ test_that("every layout name produces a full node table", {
         res <- suppressWarnings(tree_layout(tr, layout = ly))
         expect_equal(nrow(res), n_expected, info = ly)
         expect_true(all(c("node", "parent", "x", "y") %in% names(res)), info = ly)
-        expect_identical(attr(res, "layout"), ly)
+        ## "unrooted" is an alias for "daylight" (as in ggtree), so the recorded
+        ## layout is the one that actually ran
+        expected <- if (identical(ly, "unrooted")) "daylight" else ly
+        expect_identical(attr(res, "layout"), expected)
     }
 })
 
@@ -129,4 +132,21 @@ test_that("the result carries tbl_tree exactly once", {
 test_that("multiPhylo and hclust results also carry tbl_tree once", {
     expect_equal(sum(class(tree_layout(ape::rmtree(2, 5))) == "tbl_tree"), 1L)
     expect_equal(sum(class(tree_layout(hclust(dist(matrix(rnorm(20), 5))))) == "tbl_tree"), 1L)
+})
+
+test_that("layout 'unrooted' is the daylight method", {
+    ## "unrooted" is the name ggtree users know; ggtree has always translated
+    ## it to "daylight". treelayout's unrooted list did not contain it, so it
+    ## fell through to the rectangular branch: same coordinates as
+    ## layout = "rectangular", while attr(,"layout") still said "unrooted".
+    tr <- ape::rtree(60)
+    set.seed(1)
+    u <- tree_layout(tr, layout = "unrooted")
+    d <- tree_layout(tr, layout = "daylight")
+    r <- tree_layout(tr, layout = "rectangular")
+
+    expect_equal(u$x, d$x)
+    expect_equal(u$y, d$y)
+    expect_false(isTRUE(all.equal(u$x, r$x)))
+    expect_identical(get_layout(u), "daylight")
 })
