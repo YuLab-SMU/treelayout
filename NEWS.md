@@ -1,8 +1,8 @@
 # treelayout 0.1.0.003
 
-+ `calculate_angle()` stays within one turn after `scaleClade()` shifts `y`; it used to pass 360 and send tip labels to the wrong side (2026-10-27, #647)
++ `calculate_angle()` stays within one turn after `scaleClade()` shifts `y`; it used to pass 360 and send tip labels to the wrong side (2026-10-27, ggtree#647)
 + remove quadratic paths that made deep trees slow in `getYcoord()`, `getXcoord_no_length()`, `getXcoord2()`, `re_assign_ycoord_df()`, the `yscale` helpers and `slanted`: one post-order pass instead of one level per iteration, 1600 ladder tips from 17.7 s to 0.035 s (2026-10-27)
-+ `layout = "unrooted"` runs the daylight method; it fell through to the rectangular branch and returned its coordinates while reporting `"unrooted"` (2026-10-27, #568)
++ `layout = "unrooted"` runs the daylight method; it fell through to the rectangular branch and returned its coordinates while reporting `"unrooted"` (2026-10-27, ggtree#568)
 + `daylight` and `tree_and_leaf` have compiled inner loops, same coordinates as the R reference, 5.8x and 2.9x at 1000 tips; the R versions remain under `options(treelayout.daylight_cpp = FALSE)` (2026-10-27)
 + `tree_layout()` sets `tbl_tree` once in the class vector, not twice (2026-10-27)
 + a layout function returning the wrong shape is reported by name instead of failing with `subscript out of bounds` (2026-10-27)
