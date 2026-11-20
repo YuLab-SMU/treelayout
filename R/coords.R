@@ -74,36 +74,22 @@ set_branch_length_cladogram <- function(tree) {
     edge <- tree[["edge"]]
     parent <- edge[, 1]
     child <- edge[, 2]
-    n <- max(edge)
-    n_tip <- length(tree[["tip.label"]])
+    N <- max(edge)
+    Ntip <- length(tree[["tip.label"]])
 
-    n_desc <- integer(n)
-    sum_row <- numeric(n)
     ## Tips are numbered by their position in the edge list. That is what
     ## `.convert_tips2ancestors_sbp()` did too -- its rows are the tips in
     ## `.nodeId(tree, "tips")` order, which is this same order -- so the two
     ## agree even after reorder(), when the tips no longer run 1..n.
-    tip_ids <- child[!(child %in% parent)]
-    n_desc[tip_ids] <- 1L
-    sum_row[tip_ids] <- seq_along(tip_ids)
-
-    parent_of <- .parent_index(tree)
-    for (v in order(ape::node.depth(tree))) {
-        p <- parent_of[v]
-        if (p != 0L) {
-            n_desc[p] <- n_desc[p] + n_desc[v]
-            sum_row[p] <- sum_row[p] + sum_row[v]
-        }
-    }
-
-    xs <- -n_desc
-    xs <- xs + max(abs(xs))
-
-    ys <- ifelse(n_desc > 0L, sum_row / pmax(n_desc, 1L), NA_real_)
-    ys[n_desc == 0L] <- NA_real_
-    ys[is.nan(ys)] <- NA_real_
-
-    list(x = xs, y = ys)
+    y <- numeric(N)
+    tip.idx <- child[child <= Ntip]
+    y[tip.idx] <- seq(Ntip)
+    nnode <- seq(Ntip + 1, N)
+    y[-tip.idx] <- unname(unlist(lapply(ape::prop.part(tree),
+        function(i) mean(y[i], na.rm = TRUE))))
+    nd <- ape::node.depth(tree)
+    x <- abs(nd - max(nd, na.rm = TRUE))
+    list(x = x, y = y)
 }
 
 ## Number of tips in the subtree of every node, indexed by node id.
@@ -1237,14 +1223,9 @@ getXcoord_no_length <- function(tr) {
     ## one level per iteration and rebuilt table()/factor() structures each
     ## time, which on a ladder-like tree (depth ~ n) made the cost grow faster
     ## than the node count.
-    for (v in order(ape::node.depth(tr))) {
-        ch <- child_list[[v]]
-        if (length(ch) > 0L) {
-            x[v] <- min(x[ch], na.rm = TRUE) - 1
-        }
-    }
+    nd <- ape::node.depth(tr, method = 2)
 
-    x <- x - min(x, na.rm = TRUE)
+    x <- abs(nd - max(nd, na.rm = TRUE))
     return(x)
 }
 
@@ -1558,10 +1539,17 @@ getYcoord <- function(tr, step=1, tip.order = NULL) {
     ##
     ## ape::node.depth() counts edges from the tips, so increasing order visits
     ## every child before its parent and one pass is enough.
-    for (v in order(ape::node.depth(tr))) {
-        ch <- child_list[[v]]
-        if (length(ch) > 0L) {
-            y[v] <- mean(y[ch], na.rm = TRUE)
+
+    nd <- ape::node.depth(tr, method = 2)
+    totalnd <- sort(unique(nd))
+    totalnd <- totalnd[totalnd != 1]
+    nodev <- seq(N)
+    for (v in totalnd) {
+        for (j in nodev[nd == v]) {
+            ch <- child_list[[j]]
+            if (length(ch) > 0L) {
+                y[j] <- mean(y[ch], na.rm = TRUE)
+            }
         }
     }
 
